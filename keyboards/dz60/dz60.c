@@ -1,24 +1,22 @@
 #include "dz60.h"
 
-int rgb_index = 0;
-int h = 0;
+float h = 0.f;
+float v = 0.001f;     // velocity
+float min_v = 0.f;     // velocity
+float a = 0.005f;    // acceleration
+float f = 0.000075f;   // friction
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (record->event.pressed) {
-        ++rgb_index;
-        if (rgb_index >= RGBLED_NUM) 
-            rgb_index = 0;
-
-        //rgblight_sethsv_noeeprom(255, 255, 0);
-        rgblight_sethsv_at(h, 255, 255, rgb_index);
-    }
+    v += a; 
     return true;
 }
 
 void housekeeping_task_user() {
-    ++h;
-    if (h > 255) 
-        h = 0;
+    h += v;
+    if (h > 255.f) 
+        h = 0.f;
 
-    rgblight_sethsv_at(h, 255, 255, rgb_index);
+    v = fmax(min_v, v - f);
+
+    rgblight_sethsv_noeeprom((int)h, 255, 255);
 }
